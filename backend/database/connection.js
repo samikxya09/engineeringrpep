@@ -30,13 +30,14 @@ connection
 
 const users = require("./../models/usermodel")(connection, DataTypes);
 
+// Ensure tables are created or altered without dropping existing data
 connection
-    .sync({ alter: false, force: false })
+    .sync({ alter: true, force: false })
     .then(function () {
-        console.log("Migration completed successfully");
+        console.log("Database sync completed successfully");
     })
     .catch(function (error) {
-        console.error("Migration error:", error);
+        console.error("Database sync error:", error);
     });
 
 module.exports = { connection, users };
