@@ -11,7 +11,7 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
  */
 async function register(req, res) {
     try {
-        const { fullName, Fullname, name, email, password, faculty, college } = req.body;
+        const { fullName, Fullname, name, email, password, faculty, college, role } = req.body;
         const nameToSave = fullName || Fullname || name;
 
         // 1. Validate required fields
@@ -65,11 +65,12 @@ async function register(req, res) {
             password: hashedPassword,
             faculty: faculty || "General Engineering",
             college: college ? college.trim() : null,
+            role: role ? role.toLowerCase().trim() : "student",
         });
 
-        // 5. Generate JWT token
+        // 5. Generate JWT token (including user role in the payload)
         const token = jwt.sign(
-            { id: newUser.id, email: newUser.email, faculty: newUser.faculty },
+            { id: newUser.id, email: newUser.email, faculty: newUser.faculty, role: newUser.role },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -84,6 +85,7 @@ async function register(req, res) {
                 email: newUser.email,
                 faculty: newUser.faculty,
                 college: newUser.college,
+                role: newUser.role,
                 createdAt: newUser.createdAt,
             },
         });
@@ -139,9 +141,9 @@ async function login(req, res) {
             });
         }
 
-        // 4. Generate JWT token
+        // 4. Generate JWT token (including user role in the payload)
         const token = jwt.sign(
-            { id: user.id, email: user.email, faculty: user.faculty },
+            { id: user.id, email: user.email, faculty: user.faculty, role: user.role },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -156,6 +158,7 @@ async function login(req, res) {
                 email: user.email,
                 faculty: user.faculty,
                 college: user.college,
+                role: user.role,
                 createdAt: user.createdAt,
             },
         });
@@ -183,7 +186,7 @@ async function getProfile(req, res) {
         }
 
         const user = await users.findByPk(userId, {
-            attributes: ["id", "Fullname", "email", "faculty", "college", "createdAt", "updatedAt"],
+            attributes: ["id", "Fullname", "email", "faculty", "college", "role", "createdAt", "updatedAt"],
         });
 
         if (!user) {
@@ -201,6 +204,7 @@ async function getProfile(req, res) {
                 email: user.email,
                 faculty: user.faculty,
                 college: user.college,
+                role: user.role,
                 createdAt: user.createdAt,
             },
         });

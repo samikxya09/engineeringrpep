@@ -1,29 +1,29 @@
 const { DataTypes } = require("sequelize");
 
-function subject(sequelize, DataTypes) {
-    const Subject = sequelize.define("Subject", {
+function chapter(sequelize, DataTypes) {
+    const Chapter = sequelize.define("Chapter", {
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
         },
-        facultyId: {
+        subjectId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: "Faculties",
+                model: "Subjects",
                 key: "id",
             },
             onDelete: "CASCADE",
             onUpdate: "CASCADE",
         },
+        chapterNumber: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         name: {
             type: DataTypes.STRING,
             allowNull: false,
-        },
-        code: {
-            type: DataTypes.STRING,
-            allowNull: true,
         },
         description: {
             type: DataTypes.TEXT,
@@ -37,7 +37,7 @@ function subject(sequelize, DataTypes) {
         timestamps: true,
     });
 
-    return Subject;
+    return Chapter;
 }
 
-module.exports = subject;
+module.exports = chapter;

@@ -32,6 +32,11 @@ function user(sequelize, DataTypes) {
             type: DataTypes.STRING,
             allowNull: true,
         },
+        role: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: "student",
+        },
     }, {
         timestamps: true,
     });

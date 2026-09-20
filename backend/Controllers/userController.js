@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
-const { users } = require("../database/connection");
+const { users, examAttempts, exams } = require("../database/connection");
 
 /**
  * Get User Information / Profile
@@ -17,7 +17,7 @@ async function getUserProfile(req, res) {
         }
 
         const user = await users.findByPk(userId, {
-            attributes: ["id", "Fullname", "email", "faculty", "college", "createdAt", "updatedAt"],
+            attributes: ["id", "Fullname", "email", "faculty", "college", "role", "createdAt", "updatedAt"],
         });
 
         if (!user) {
@@ -30,11 +30,13 @@ async function getUserProfile(req, res) {
             message: "User information fetched successfully",
             user: {
                 id: user.id,
+                name: user.Fullname,
                 fullName: user.Fullname,
                 Fullname: user.Fullname,
                 email: user.email,
                 faculty: user.faculty,
                 college: user.college,
+                role: user.role,
                 createdAt: user.createdAt,
             },
         });
@@ -101,17 +103,20 @@ async function updateProfile(req, res) {
             user.college = college ? college.trim() : null;
         }
 
+        // Note: 'role' is intentionally excluded to prevent unauthorized privilege escalation
         await user.save();
 
         return res.status(200).json({
             message: "Profile updated successfully",
             user: {
                 id: user.id,
+                name: user.Fullname,
                 fullName: user.Fullname,
                 Fullname: user.Fullname,
                 email: user.email,
                 faculty: user.faculty,
                 college: user.college,
+                role: user.role,
                 updatedAt: user.updatedAt,
             },
         });
@@ -203,8 +208,111 @@ async function changePassword(req, res) {
     }
 }
 
+/**
+ * Get Student Dashboard Statistics
+ * GET /api/user/dashboard
+ */
+async function getDashboardStats(req, res) {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized: User ID not found in token",
+            });
+        }
+
+        const user = await users.findByPk(userId, {
+            attributes: ["id", "Fullname", "email", "faculty", "college", "role", "createdAt"],
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        // Retrieve student's completed exam history to calculate real statistics
+        const completedAttempts = await examAttempts.findAll({
+            where: { userId: Number(userId), status: "completed" },
+            include: [{ model: exams, as: "exam", attributes: ["id", "title", "type"] }],
+            order: [["createdAt", "DESC"]],
+        });
+
+        const totalExamsAttempted = completedAttempts.length;
+        const totalQuestionsAnswered = completedAttempts.reduce((sum, a) => sum + ((a.correctCount || 0) + (a.incorrectCount || 0)), 0);
+        const totalScore = completedAttempts.reduce((sum, a) => sum + Number(a.score || 0), 0);
+        const averageScore = totalExamsAttempted > 0 ? Math.round((totalScore / totalExamsAttempted) * 100) / 100 : 0;
+
+        const recentActivity = completedAttempts.slice(0, 5).map(att => ({
+            attemptId: att.id,
+            examTitle: att.exam?.title || "Mock Exam",
+            examType: att.exam?.type || "mock",
+            score: att.score,
+            percentage: att.percentage,
+            date: att.createdAt,
+        }));
+
+        const dashboardData = {
+            user: {
+                id: user.id,
+                name: user.Fullname,
+                fullName: user.Fullname,
+                email: user.email,
+                faculty: user.faculty,
+                college: user.college,
+                role: user.role,
+            },
+            statistics: {
+                totalExamsAttempted,
+                totalQuestionsAnswered,
+                averageScore,
+            },
+            recentActivity,
+        };
+
+        return res.status(200).json({
+            message: "Dashboard data retrieved successfully",
+            data: dashboardData,
+        });
+    } catch (error) {
+        console.error("Error retrieving dashboard statistics:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+}
+
+/**
+ * Get All Users (Admin Only)
+ * GET /api/user/admin/all
+ */
+async function getAllUsers(req, res) {
+    try {
+        const allUsers = await users.findAll({
+            attributes: ["id", "Fullname", "email", "faculty", "college", "role", "createdAt"],
+            order: [["createdAt", "DESC"]],
+        });
+
+        return res.status(200).json({
+            message: "All users retrieved successfully (Admin Access)",
+            count: allUsers.length,
+            users: allUsers,
+        });
+    } catch (error) {
+        console.error("Error fetching all users:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getUserProfile,
     updateProfile,
     changePassword,
+    getDashboardStats,
+    getAllUsers,
 };

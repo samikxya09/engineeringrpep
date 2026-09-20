@@ -9,6 +9,12 @@ require("./database/connection");
 
 const authRoute = require("./routes/authRoute");
 const userRoute = require("./routes/userroute");
+const facultyRoutes = require("./routes/facultyRoutes");
+const subjectRoutes = require("./routes/subjectRoutes");
+const chapterRoutes = require("./routes/chapterRoutes");
+const questionRoutes = require("./routes/questionRoutes");
+const examRoutes = require("./routes/examRoutes");
+const resultRoutes = require("./routes/resultRoutes");
 
 // Middleware
 app.use(cors({
@@ -20,8 +26,20 @@ app.use(express.json());
 // Mount Routes (supporting both /api/* and root paths)
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRoute);
+app.use("/api/faculties", facultyRoutes);
+app.use("/api/subjects", subjectRoutes);
+app.use("/api/chapters", chapterRoutes);
+app.use("/api/questions", questionRoutes);
+app.use("/api/exams", examRoutes);
+app.use("/api/results", resultRoutes);
 app.use("/", authRoute);
 app.use("/user", userRoute);
+app.use("/faculties", facultyRoutes);
+app.use("/subjects", subjectRoutes);
+app.use("/chapters", chapterRoutes);
+app.use("/questions", questionRoutes);
+app.use("/exams", examRoutes);
+app.use("/results", resultRoutes);
 
 // Root Health Check Route
 app.get("/", function (req, res) {

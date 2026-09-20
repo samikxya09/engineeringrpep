@@ -25,7 +25,7 @@ function authenticateToken(req, res, next) {
                 });
             }
 
-            // Attach decoded payload (id, email, faculty) to req.user
+            // Attach decoded payload (id, email, faculty, role) to req.user
             req.user = decodedUser;
             next();
         });

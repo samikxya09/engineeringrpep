@@ -1,43 +1,46 @@
 const { DataTypes } = require("sequelize");
 
-function subject(sequelize, DataTypes) {
-    const Subject = sequelize.define("Subject", {
+function examAnswer(sequelize, DataTypes) {
+    const ExamAnswer = sequelize.define("ExamAnswer", {
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
         },
-        facultyId: {
+        attemptId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: "Faculties",
+                model: "ExamAttempts",
                 key: "id",
             },
             onDelete: "CASCADE",
             onUpdate: "CASCADE",
         },
-        name: {
-            type: DataTypes.STRING,
+        questionId: {
+            type: DataTypes.INTEGER,
             allowNull: false,
+            references: {
+                model: "Questions",
+                key: "id",
+            },
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE",
         },
-        code: {
+        selectedAnswer: {
             type: DataTypes.STRING,
             allowNull: true,
         },
-        description: {
-            type: DataTypes.TEXT,
-            allowNull: true,
-        },
-        isActive: {
+        isCorrect: {
             type: DataTypes.BOOLEAN,
-            defaultValue: true,
+            allowNull: false,
+            defaultValue: false,
         },
     }, {
         timestamps: true,
     });
 
-    return Subject;
+    return ExamAnswer;
 }
 
-module.exports = subject;
+module.exports = examAnswer;
