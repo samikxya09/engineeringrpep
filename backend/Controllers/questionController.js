@@ -4,11 +4,11 @@ const { questions, chapters, subjects, faculties, connection } = require("../dat
 /**
  * 1. Get All Questions (Student / Public)
  * GET /api/questions
- * Filters: ?chapterId=1&difficulty=easy&limit=20&page=1
+ * Filters: ?facultyId=1&subjectId=2&chapterId=1&difficulty=easy&limit=20&page=1
  */
 async function getAllQuestions(req, res) {
     try {
-        const { chapterId, difficulty, limit = 50, page = 1 } = req.query;
+        const { facultyId, subjectId, chapterId, difficulty, limit = 50, page = 1 } = req.query;
         const whereClause = { isActive: true };
 
         if (chapterId && !isNaN(Number(chapterId))) {
@@ -16,11 +16,22 @@ async function getAllQuestions(req, res) {
         }
 
         if (difficulty) {
-            whereClause.difficulty = difficulty.toLowerCase();
+            whereClause.difficulty = difficulty.toLowerCase().trim();
+        }
+
+        const chapterWhere = {};
+        if (subjectId && !isNaN(Number(subjectId))) {
+            chapterWhere.subjectId = Number(subjectId);
+        }
+
+        const subjectWhere = {};
+        if (facultyId && !isNaN(Number(facultyId))) {
+            subjectWhere.facultyId = Number(facultyId);
         }
 
         const parsedLimit = Math.min(Math.max(Number(limit) || 50, 1), 100);
-        const parsedOffset = (Math.max(Number(page) || 1, 1) - 1) * parsedLimit;
+        const parsedPage = Math.max(Number(page) || 1, 1);
+        const parsedOffset = (parsedPage - 1) * parsedLimit;
 
         const { rows: questionList, count: totalCount } = await questions.findAndCountAll({
             where: whereClause,
@@ -41,12 +52,21 @@ async function getAllQuestions(req, res) {
                 {
                     model: chapters,
                     as: "chapter",
+                    where: Object.keys(chapterWhere).length > 0 ? chapterWhere : undefined,
                     attributes: ["id", "chapterNumber", "name", "subjectId"],
                     include: [
                         {
                             model: subjects,
                             as: "subject",
-                            attributes: ["id", "name", "code"],
+                            where: Object.keys(subjectWhere).length > 0 ? subjectWhere : undefined,
+                            attributes: ["id", "name", "code", "facultyId"],
+                            include: [
+                                {
+                                    model: faculties,
+                                    as: "faculty",
+                                    attributes: ["id", "name", "code"],
+                                },
+                            ],
                         },
                     ],
                 },
@@ -56,11 +76,20 @@ async function getAllQuestions(req, res) {
             order: [["id", "ASC"]],
         });
 
+        const totalPages = Math.ceil(totalCount / parsedLimit);
+
         return res.status(200).json({
             message: "Questions fetched successfully",
             totalCount,
-            page: Number(page) || 1,
+            totalPages,
+            page: parsedPage,
             limit: parsedLimit,
+            filters: {
+                facultyId: facultyId ? Number(facultyId) : null,
+                subjectId: subjectId ? Number(subjectId) : null,
+                chapterId: chapterId ? Number(chapterId) : null,
+                difficulty: difficulty || null,
+            },
             questions: questionList,
         });
     } catch (error) {
@@ -214,19 +243,31 @@ async function getRandomQuestions(req, res) {
 
 /**
  * 4. Search Questions (Student / Public)
- * GET /api/questions/search?q=fluid&subjectId=1&chapterId=2
+ * GET /api/questions/search?q=fluid&difficulty=easy&subjectId=1&chapterId=2&facultyId=1&page=1&limit=20
  */
 async function searchQuestions(req, res) {
     try {
-        const { q, query, search, subjectId, chapterId, difficulty, limit = 30 } = req.query;
-        const searchTerm = (q || query || search || "").trim();
+        const {
+            q,
+            query,
+            search,
+            keyword,
+            subjectId,
+            chapterId,
+            facultyId,
+            difficulty,
+            page = 1,
+            limit = 20,
+        } = req.query;
 
+        const searchTerm = (q || query || search || keyword || "").trim();
         const whereClause = { isActive: true };
 
         if (searchTerm) {
-            whereClause.questionText = {
-                [Op.iLike || Op.like]: `%${searchTerm}%`,
-            };
+            whereClause[Op.or] = [
+                { questionText: { [Op.iLike]: `%${searchTerm}%` } },
+                { explanation: { [Op.iLike]: `%${searchTerm}%` } },
+            ];
         }
 
         if (chapterId && !isNaN(Number(chapterId))) {
@@ -234,26 +275,24 @@ async function searchQuestions(req, res) {
         }
 
         if (difficulty) {
-            whereClause.difficulty = difficulty.toLowerCase();
+            whereClause.difficulty = difficulty.toLowerCase().trim();
         }
 
-        const includeClause = [
-            {
-                model: chapters,
-                as: "chapter",
-                attributes: ["id", "chapterNumber", "name", "subjectId"],
-                where: subjectId && !isNaN(Number(subjectId)) ? { subjectId: Number(subjectId) } : undefined,
-                include: [
-                    {
-                        model: subjects,
-                        as: "subject",
-                        attributes: ["id", "name", "code"],
-                    },
-                ],
-            },
-        ];
+        const chapterWhere = {};
+        if (subjectId && !isNaN(Number(subjectId))) {
+            chapterWhere.subjectId = Number(subjectId);
+        }
 
-        const results = await questions.findAll({
+        const subjectWhere = {};
+        if (facultyId && !isNaN(Number(facultyId))) {
+            subjectWhere.facultyId = Number(facultyId);
+        }
+
+        const parsedLimit = Math.min(Math.max(Number(limit) || 20, 1), 100);
+        const parsedPage = Math.max(Number(page) || 1, 1);
+        const parsedOffset = (parsedPage - 1) * parsedLimit;
+
+        const { rows: results, count: totalCount } = await questions.findAndCountAll({
             where: whereClause,
             attributes: [
                 "id",
@@ -266,16 +305,51 @@ async function searchQuestions(req, res) {
                 "explanation",
                 "difficulty",
                 "chapterId",
+                "createdAt",
             ],
-            include: includeClause,
-            limit: Math.min(Math.max(Number(limit) || 30, 1), 100),
+            include: [
+                {
+                    model: chapters,
+                    as: "chapter",
+                    where: Object.keys(chapterWhere).length > 0 ? chapterWhere : undefined,
+                    attributes: ["id", "chapterNumber", "name", "subjectId"],
+                    include: [
+                        {
+                            model: subjects,
+                            as: "subject",
+                            where: Object.keys(subjectWhere).length > 0 ? subjectWhere : undefined,
+                            attributes: ["id", "name", "code", "facultyId"],
+                            include: [
+                                {
+                                    model: faculties,
+                                    as: "faculty",
+                                    attributes: ["id", "name", "code"],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            limit: parsedLimit,
+            offset: parsedOffset,
             order: [["id", "ASC"]],
         });
+
+        const totalPages = Math.ceil(totalCount / parsedLimit);
 
         return res.status(200).json({
             message: "Question search completed",
             searchTerm,
-            count: results.length,
+            totalCount,
+            totalPages,
+            page: parsedPage,
+            limit: parsedLimit,
+            filters: {
+                facultyId: facultyId ? Number(facultyId) : null,
+                subjectId: subjectId ? Number(subjectId) : null,
+                chapterId: chapterId ? Number(chapterId) : null,
+                difficulty: difficulty || null,
+            },
             questions: results,
         });
     } catch (error) {

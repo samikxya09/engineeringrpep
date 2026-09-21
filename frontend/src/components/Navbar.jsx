@@ -44,13 +44,39 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7">
+          <nav className="hidden md:flex items-center gap-6">
             <NavLink to="/" className={navLinkStyle}>
               home
             </NavLink>
-            <NavLink to="/dashboard" className={navLinkStyle}>
-              dashboard
+            <NavLink to="/faculties" className={navLinkStyle}>
+              disciplines
             </NavLink>
+            <NavLink to="/questions" className={navLinkStyle}>
+              questions
+            </NavLink>
+            <NavLink to="/exams" className={navLinkStyle}>
+              mock exams
+            </NavLink>
+            <NavLink to="/study-materials" className={navLinkStyle}>
+              notes
+            </NavLink>
+            <NavLink to="/video-resources" className={navLinkStyle}>
+              videos
+            </NavLink>
+            {isAuthenticated && (
+              <NavLink to="/bookmarks" className={navLinkStyle}>
+                bookmarks
+              </NavLink>
+            )}
+            {isAuthenticated && user?.role === "admin" && (
+              <NavLink to="/admin" className={({ isActive }) =>
+                `text-[14px] leading-5 font-medium transition-colors ${
+                  isActive ? "text-[var(--accent-coral)]" : "text-[var(--accent-coral)]/80 hover:text-[var(--accent-coral)]"
+                }`
+              }>
+                admin
+              </NavLink>
+            )}
           </nav>
 
           {/* Desktop Actions */}
@@ -61,7 +87,7 @@ const Navbar = () => {
             {isAuthenticated ? (
               <div className="flex items-center gap-2.5">
                 <Link
-                  to="/dashboard"
+                  to={user?.role === "admin" ? "/admin" : "/student-dashboard"}
                   className="btn-secondary flex items-center gap-1.5 text-[13px]"
                   title={`Logged in as ${displayName}`}
                 >
@@ -107,7 +133,7 @@ const Navbar = () => {
       {/* Mobile Drawer */}
       {isOpen && (
         <div className="md:hidden bg-[var(--bg-surface)] border-b border-[var(--border-color)] px-6 py-4 space-y-3">
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-2">
             <NavLink
               to="/"
               onClick={() => setIsOpen(false)}
@@ -116,12 +142,67 @@ const Navbar = () => {
               home
             </NavLink>
             <NavLink
-              to="/dashboard"
+              to="/faculties"
               onClick={() => setIsOpen(false)}
               className="text-[14px] text-[var(--text-primary)] py-1"
             >
-              dashboard
+              disciplines
             </NavLink>
+            <NavLink
+              to="/questions"
+              onClick={() => setIsOpen(false)}
+              className="text-[14px] text-[var(--text-primary)] py-1"
+            >
+              practice questions
+            </NavLink>
+            <NavLink
+              to="/exams"
+              onClick={() => setIsOpen(false)}
+              className="text-[14px] text-[var(--text-primary)] py-1"
+            >
+              mock exams
+            </NavLink>
+            <NavLink
+              to="/study-materials"
+              onClick={() => setIsOpen(false)}
+              className="text-[14px] text-[var(--text-primary)] py-1"
+            >
+              study notes
+            </NavLink>
+            <NavLink
+              to="/video-resources"
+              onClick={() => setIsOpen(false)}
+              className="text-[14px] text-[var(--text-primary)] py-1"
+            >
+              video tutorials
+            </NavLink>
+            {isAuthenticated && (
+              <NavLink
+                to="/bookmarks"
+                onClick={() => setIsOpen(false)}
+                className="text-[14px] text-[var(--text-primary)] py-1"
+              >
+                my bookmarks
+              </NavLink>
+            )}
+            {isAuthenticated && user?.role === "admin" && (
+              <NavLink
+                to="/admin"
+                onClick={() => setIsOpen(false)}
+                className="text-[14px] text-[var(--accent-coral)] font-medium py-1"
+              >
+                admin portal
+              </NavLink>
+            )}
+            {isAuthenticated && (
+              <NavLink
+                to="/student-dashboard"
+                onClick={() => setIsOpen(false)}
+                className="text-[14px] text-[var(--text-primary)] py-1"
+              >
+                student dashboard
+              </NavLink>
+            )}
           </div>
           <div className="pt-3 border-t border-[var(--border-color)] flex flex-col gap-2">
             {isAuthenticated ? (

@@ -37,6 +37,9 @@ const questions = require("./../models/questionmodel")(connection, DataTypes);
 const exams = require("./../models/exammodel")(connection, DataTypes);
 const examAttempts = require("./../models/examattemptmodel")(connection, DataTypes);
 const examAnswers = require("./../models/examanswermodel")(connection, DataTypes);
+const studyMaterials = require("./../models/studymaterialmodel")(connection, DataTypes);
+const videoResources = require("./../models/videoresourcemodel")(connection, DataTypes);
+const bookmarks = require("./../models/bookmarkmodel")(connection, DataTypes);
 
 // Define Relationships
 faculties.hasMany(subjects, { foreignKey: "facultyId", as: "subjects", onDelete: "CASCADE" });
@@ -67,9 +70,42 @@ examAnswers.belongsTo(examAttempts, { foreignKey: "attemptId", as: "attempt", on
 questions.hasMany(examAnswers, { foreignKey: "questionId", as: "answers", onDelete: "CASCADE" });
 examAnswers.belongsTo(questions, { foreignKey: "questionId", as: "question", onDelete: "CASCADE" });
 
-// Ensure tables are created or altered without dropping existing data
+// Study Materials Associations
+faculties.hasMany(studyMaterials, { foreignKey: "facultyId", as: "studyMaterials", onDelete: "SET NULL" });
+studyMaterials.belongsTo(faculties, { foreignKey: "facultyId", as: "faculty", onDelete: "SET NULL" });
+
+subjects.hasMany(studyMaterials, { foreignKey: "subjectId", as: "studyMaterials", onDelete: "CASCADE" });
+studyMaterials.belongsTo(subjects, { foreignKey: "subjectId", as: "subject", onDelete: "CASCADE" });
+
+chapters.hasMany(studyMaterials, { foreignKey: "chapterId", as: "studyMaterials", onDelete: "SET NULL" });
+studyMaterials.belongsTo(chapters, { foreignKey: "chapterId", as: "chapter", onDelete: "SET NULL" });
+
+users.hasMany(studyMaterials, { foreignKey: "uploadedBy", as: "studyMaterials", onDelete: "CASCADE" });
+studyMaterials.belongsTo(users, { foreignKey: "uploadedBy", as: "uploader", onDelete: "CASCADE" });
+
+// Video Resources Associations
+faculties.hasMany(videoResources, { foreignKey: "facultyId", as: "videoResources", onDelete: "SET NULL" });
+videoResources.belongsTo(faculties, { foreignKey: "facultyId", as: "faculty", onDelete: "SET NULL" });
+
+subjects.hasMany(videoResources, { foreignKey: "subjectId", as: "videoResources", onDelete: "CASCADE" });
+videoResources.belongsTo(subjects, { foreignKey: "subjectId", as: "subject", onDelete: "CASCADE" });
+
+chapters.hasMany(videoResources, { foreignKey: "chapterId", as: "videoResources", onDelete: "SET NULL" });
+videoResources.belongsTo(chapters, { foreignKey: "chapterId", as: "chapter", onDelete: "SET NULL" });
+
+users.hasMany(videoResources, { foreignKey: "createdBy", as: "videoResources", onDelete: "SET NULL" });
+videoResources.belongsTo(users, { foreignKey: "createdBy", as: "creator", onDelete: "SET NULL" });
+
+// Bookmark Associations
+users.hasMany(bookmarks, { foreignKey: "userId", as: "bookmarks", onDelete: "CASCADE" });
+bookmarks.belongsTo(users, { foreignKey: "userId", as: "user", onDelete: "CASCADE" });
+
+questions.hasMany(bookmarks, { foreignKey: "questionId", as: "bookmarks", onDelete: "CASCADE" });
+bookmarks.belongsTo(questions, { foreignKey: "questionId", as: "question", onDelete: "CASCADE" });
+
+// Ensure tables are created without dropping existing data
 connection
-    .sync({ alter: true, force: false })
+    .sync({ alter: false, force: false })
     .then(function () {
         console.log("Database sync completed successfully");
     })
@@ -87,4 +123,7 @@ module.exports = {
     exams,
     examAttempts,
     examAnswers,
+    studyMaterials,
+    videoResources,
+    bookmarks,
 };

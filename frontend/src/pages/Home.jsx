@@ -1,9 +1,29 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check } from "lucide-react";
 import { ENGINEERING_FACULTIES, PLATFORM_FEATURES } from "../utils/constants";
+import { facultyService } from "../services/api";
 
 const Home = () => {
+  const [faculties, setFaculties] = useState(ENGINEERING_FACULTIES);
+  const [loadingFaculties, setLoadingFaculties] = useState(true);
+
+  useEffect(() => {
+    const loadFaculties = async () => {
+      try {
+        const res = await facultyService.getAll();
+        const list = res.faculties || res.data || (Array.isArray(res) ? res : []);
+        if (list && list.length > 0) {
+          setFaculties(list);
+        }
+      } catch (err) {
+        console.warn("Using fallback faculties for homepage:", err.message);
+      } finally {
+        setLoadingFaculties(false);
+      }
+    };
+    loadFaculties();
+  }, []);
   return (
     <div className="space-y-24 py-12 md:py-20 text-[var(--text-primary)] transition-colors duration-200">
       
@@ -130,18 +150,19 @@ const Home = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {ENGINEERING_FACULTIES.map((fac) => (
-            <div
+          {faculties.map((fac) => (
+            <Link
               key={fac.id}
-              className="card-minimal p-6 flex flex-col justify-between space-y-6 hover:border-[var(--text-primary)] transition-colors group"
+              to={typeof fac.id === "number" ? `/faculties/${fac.id}/subjects` : "/faculties"}
+              className="card-minimal p-6 flex flex-col justify-between space-y-6 hover:border-[var(--text-primary)] transition-all group"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium px-2 py-0.5 rounded-[6px] bg-[var(--bg-canvas)] border border-[var(--border-color)] text-[var(--text-primary)]">
-                    {fac.code}
+                  <span className="text-[11px] font-medium px-2 py-0.5 rounded-[6px] bg-[var(--bg-canvas)] border border-[var(--border-color)] text-[var(--text-primary)] font-mono">
+                    {fac.code || "NEC"}
                   </span>
                   <span className="text-[12px] text-[var(--text-secondary)]">
-                    {fac.totalQuestions} Questions
+                    {fac.totalQuestions || "100"} Questions
                   </span>
                 </div>
 
@@ -149,18 +170,18 @@ const Home = () => {
                   {fac.name}
                 </h3>
 
-                <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
-                  {fac.description}
+                <p className="text-[13px] leading-relaxed text-[var(--text-secondary)] line-clamp-3">
+                  {fac.description || "Core syllabus topics, model questions, and mock exams for council license."}
                 </p>
               </div>
 
               <div className="pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-[13px]">
-                <span className="text-[var(--text-secondary)]">Passing: {fac.passingMarks}%</span>
-                <span className="btn-link">
+                <span className="text-[var(--text-secondary)]">Passing: {fac.passingMarks || 50}%</span>
+                <span className="btn-link flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                   Open syllabus →
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>

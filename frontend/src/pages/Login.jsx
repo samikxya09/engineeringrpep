@@ -37,10 +37,14 @@ const Login = () => {
 
     try {
       setSubmitting(true);
-      await login(formData.email.trim(), formData.password);
+      const result = await login(formData.email.trim(), formData.password);
       
-      // Redirect to previous intended page or default to /dashboard
-      const destination = location.state?.from?.pathname || "/dashboard";
+      // Redirect based on user role: Admins -> /admin, Students -> /dashboard (or previously attempted route)
+      let defaultDestination = "/dashboard";
+      if (result?.user?.role === "admin") {
+        defaultDestination = "/admin";
+      }
+      const destination = location.state?.from?.pathname || defaultDestination;
       navigate(destination, { replace: true });
     } catch (error) {
       setErrorMessage(error.message || "Invalid email or password. Please try again.");

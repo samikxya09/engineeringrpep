@@ -5,22 +5,43 @@ import { Routes, Route } from "react-router-dom";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import Dashboard from "../pages/Dashboard";
+import StudentDashboard from "../pages/StudentDashboard";
+import Faculties from "../pages/Faculties";
+import Subjects from "../pages/Subjects";
+import Chapters from "../pages/Chapters";
+import QuestionsPractice from "../pages/QuestionsPractice";
+import Exams from "../pages/Exams";
+import ExamSession from "../pages/ExamSession";
+import ExamResult from "../pages/ExamResult";
+import Bookmarks from "../pages/Bookmarks";
+import StudyMaterials from "../pages/StudyMaterials";
+import VideoResources from "../pages/VideoResources";
+import AdminDashboard from "../pages/AdminDashboard";
 import NotFound from "../pages/NotFound";
 
 // Route Guards
 import ProtectedRoute from "../components/ProtectedRoute";
 import GuestRoute from "../components/GuestRoute";
+import AdminRoute from "../components/AdminRoute";
 
 /**
  * AppRoutes Component
- * Centralizes all page routes with ProtectedRoute and GuestRoute guards.
+ * Centralizes all page routes with ProtectedRoute, GuestRoute, and AdminRoute guards.
  */
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public Routes */}
+      {/* Public Explorer Routes */}
       <Route path="/" element={<Home />} />
+      <Route path="/faculties" element={<Faculties />} />
+      <Route path="/faculties/:facultyId/subjects" element={<Subjects />} />
+      <Route path="/subjects" element={<Subjects />} />
+      <Route path="/subjects/:subjectId/chapters" element={<Chapters />} />
+      <Route path="/chapters" element={<Chapters />} />
+      <Route path="/questions" element={<QuestionsPractice />} />
+      <Route path="/exams" element={<Exams />} />
+      <Route path="/study-materials" element={<StudyMaterials />} />
+      <Route path="/video-resources" element={<VideoResources />} />
 
       {/* Guest Only Routes (Redirects to /dashboard if already logged in) */}
       <Route
@@ -40,13 +61,63 @@ const AppRoutes = () => {
         }
       />
 
-      {/* Protected Routes (Redirects to /login if not authenticated) */}
+      {/* Protected Student / Candidate Routes */}
+      <Route
+        path="/student-dashboard"
+        element={
+          <ProtectedRoute>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <StudentDashboard />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/exam/:examId/session"
+        element={
+          <ProtectedRoute>
+            <ExamSession />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/results/:attemptId"
+        element={
+          <ProtectedRoute>
+            <ExamResult />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bookmarks"
+        element={
+          <ProtectedRoute>
+            <Bookmarks />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Admin Only Routes */}
+      <Route
+        path="/admin-dashboard"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
         }
       />
 
@@ -57,3 +128,4 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+

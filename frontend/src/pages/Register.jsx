@@ -56,14 +56,18 @@ const Register = () => {
 
     try {
       setSubmitting(true);
-      await register({
+      const result = await register({
         fullName: formData.fullName.trim(),
         email: formData.email.trim(),
         faculty: formData.faculty,
         college: formData.college.trim(),
         password: formData.password,
       });
-      navigate("/dashboard");
+      if (result?.user?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (error) {
       setErrorMessage(error.message || "Registration failed. Please try again.");
     } finally {

@@ -57,4 +57,225 @@ export const authService = {
   },
 };
 
+// Faculty Service Endpoints
+export const facultyService = {
+  getAll: async () => {
+    const response = await api.get("/api/faculties");
+    return response.data;
+  },
+  getById: async (facultyId) => {
+    const response = await api.get(`/api/faculties/${facultyId}`);
+    return response.data;
+  },
+  getSubjects: async (facultyId) => {
+    const response = await api.get(`/api/faculties/${facultyId}/subjects`);
+    return response.data;
+  },
+  getExams: async (facultyId) => {
+    const response = await api.get(`/api/faculties/${facultyId}/exams`);
+    return response.data;
+  },
+};
+
+// Subject Service Endpoints
+export const subjectService = {
+  getAll: async () => {
+    const response = await api.get("/api/subjects");
+    return response.data;
+  },
+  getById: async (subjectId) => {
+    const response = await api.get(`/api/subjects/${subjectId}`);
+    return response.data;
+  },
+  getChapters: async (subjectId) => {
+    const response = await api.get(`/api/subjects/${subjectId}/chapters`);
+    return response.data;
+  },
+  getStudyMaterials: async (subjectId) => {
+    const response = await api.get(`/api/subjects/${subjectId}/study-materials`);
+    return response.data;
+  },
+  getVideoResources: async (subjectId) => {
+    const response = await api.get(`/api/subjects/${subjectId}/video-resources`);
+    return response.data;
+  },
+};
+
+// Chapter Service Endpoints
+export const chapterService = {
+  getAll: async () => {
+    const response = await api.get("/api/chapters");
+    return response.data;
+  },
+  getById: async (chapterId) => {
+    const response = await api.get(`/api/chapters/${chapterId}`);
+    return response.data;
+  },
+  getQuestions: async (chapterId) => {
+    const response = await api.get(`/api/chapters/${chapterId}/questions`);
+    return response.data;
+  },
+  getVideoResources: async (chapterId) => {
+    const response = await api.get(`/api/chapters/${chapterId}/video-resources`);
+    return response.data;
+  },
+};
+
+// Question Service Endpoints
+export const questionService = {
+  getAll: async (params = {}) => {
+    const response = await api.get("/api/questions", { params });
+    return response.data;
+  },
+  search: async (params = {}) => {
+    const response = await api.get("/api/questions/search", { params });
+    return response.data;
+  },
+  getRandom: async (params = {}) => {
+    const response = await api.get("/api/questions/random", { params });
+    return response.data;
+  },
+  getById: async (questionId) => {
+    const response = await api.get(`/api/questions/${questionId}`);
+    return response.data;
+  },
+};
+
+// Exam & Attempt Service Endpoints
+export const examService = {
+  getAll: async () => {
+    const response = await api.get("/api/exams");
+    return response.data;
+  },
+  getById: async (examId) => {
+    const response = await api.get(`/api/exams/${examId}`);
+    return response.data;
+  },
+  startAttempt: async (examId) => {
+    const response = await api.post(`/api/exams/${examId}/start`);
+    return response.data;
+  },
+  submitAttempt: async (attemptId, answers) => {
+    const response = await api.post(`/api/exams/attempts/${attemptId}/submit`, { answers });
+    return response.data;
+  },
+};
+
+// Result & Analytics Service Endpoints
+export const resultService = {
+  getMyResults: async (params = {}) => {
+    const response = await api.get("/api/results", { params });
+    return response.data;
+  },
+  getResultDetails: async (attemptId) => {
+    const response = await api.get(`/api/results/${attemptId}`);
+    return response.data;
+  },
+  getAnalytics: async () => {
+    const response = await api.get("/api/results/analytics");
+    return response.data;
+  },
+  getLeaderboard: async () => {
+    const response = await api.get("/api/results/leaderboard");
+    return response.data;
+  },
+};
+
+// Bookmark Service Endpoints
+export const bookmarkService = {
+  getMyBookmarks: async (params = {}) => {
+    const response = await api.get("/api/bookmarks", { params });
+    return response.data;
+  },
+  add: async (questionId) => {
+    const response = await api.post("/api/bookmarks", { questionId });
+    return response.data;
+  },
+  remove: async (questionId) => {
+    const response = await api.delete(`/api/bookmarks/${questionId}`);
+    return response.data;
+  },
+};
+
+// Study Material (PDF) Service Endpoints
+export const studyMaterialService = {
+  getAll: async (params = {}) => {
+    const response = await api.get("/api/study-materials", { params });
+    return response.data;
+  },
+  search: async (params = {}) => {
+    const response = await api.get("/api/study-materials/search", { params });
+    return response.data;
+  },
+  getById: async (materialId) => {
+    const response = await api.get(`/api/study-materials/${materialId}`);
+    return response.data;
+  },
+  download: async (materialId) => {
+    const response = await api.get(`/api/study-materials/${materialId}/download`, {
+      responseType: "blob",
+    });
+    return response;
+  },
+};
+
+// Video Resource Service Endpoints
+export const videoResourceService = {
+  getAll: async (params = {}) => {
+    const response = await api.get("/api/video-resources", { params });
+    return response.data;
+  },
+  search: async (params = {}) => {
+    const response = await api.get("/api/video-resources/search", { params });
+    return response.data;
+  },
+  getById: async (videoId) => {
+    const response = await api.get(`/api/video-resources/${videoId}`);
+    return response.data;
+  },
+};
+
+// User & Dashboard Service Endpoints
+export const userService = {
+  getDashboard: async () => {
+    const response = await api.get("/api/user/dashboard");
+    return response.data;
+  },
+  getProfile: async () => {
+    const response = await api.get("/api/user/profile");
+    return response.data;
+  },
+  updateProfile: async (data) => {
+    const response = await api.put("/api/user/profile", data);
+    return response.data;
+  },
+  changePassword: async (passwords) => {
+    const response = await api.put("/api/user/change-password", passwords);
+    return response.data;
+  },
+};
+
+// Admin Service Endpoints (Role: admin only)
+export const adminService = {
+  getDashboard: async () => {
+    const response = await api.get("/api/admin/dashboard");
+    return response.data;
+  },
+  getAllUsers: async () => {
+    const response = await api.get("/api/user/admin/all");
+    return response.data;
+  },
+  getExamStatistics: async () => {
+    const response = await api.get("/api/results/admin/statistics");
+    return response.data;
+  },
+  getAllExamResults: async () => {
+    const response = await api.get("/api/results/admin/all");
+    return response.data;
+  },
+};
+
 export default api;
+
+
+

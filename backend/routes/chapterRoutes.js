@@ -10,6 +10,7 @@ const {
     deleteChapter,
 } = require("../Controllers/chapterController");
 const { getQuestionsByChapter } = require("../Controllers/questionController");
+const { getVideosByChapter } = require("../Controllers/videoResourceController");
 
 const { authenticateToken } = require("../middleware/authMiddleware");
 const { authorizeRole } = require("../middleware/authorizeRole");
@@ -19,6 +20,7 @@ router.get("/", getAllChapters);
 router.get("/:id", getChapterById);
 router.get("/subject/:subjectId", getChaptersBySubject);
 router.get("/:chapterId/questions", getQuestionsByChapter);
+router.get("/:chapterId/video-resources", getVideosByChapter);
 
 // Admin-Only Routes (Protected by JWT Authentication + Admin Role)
 router.post("/", authenticateToken, authorizeRole("admin"), createChapter);

@@ -1,8 +1,10 @@
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,600,500,400,300&display=swap");
 @import "tailwindcss";
 
 @theme {
-  --font-serif: "Instrument Serif", Georgia, serif;
-  --font-sans: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-editorial: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 @layer base {
@@ -34,8 +36,12 @@
     --btn-secondary-text: #EDEDED;
   }
 
+  *, ::before, ::after {
+    font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
   body {
-    font-family: var(--font-sans);
+    font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg-canvas);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
@@ -44,9 +50,10 @@
     transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  h1, h2, h3, .font-editorial {
-    font-family: var(--font-serif);
-    font-weight: 400;
+  h1, h2, h3, h4, h5, h6, .font-editorial {
+    font-family: "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 }
 

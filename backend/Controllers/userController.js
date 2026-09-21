@@ -1,6 +1,15 @@
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
-const { users, examAttempts, exams } = require("../database/connection");
+const {
+    users,
+    examAttempts,
+    exams,
+    bookmarks,
+    questions,
+    chapters,
+    subjects,
+    faculties,
+} = require("../database/connection");
 
 /**
  * Get User Information / Profile
@@ -235,23 +244,95 @@ async function getDashboardStats(req, res) {
         // Retrieve student's completed exam history to calculate real statistics
         const completedAttempts = await examAttempts.findAll({
             where: { userId: Number(userId), status: "completed" },
-            include: [{ model: exams, as: "exam", attributes: ["id", "title", "type"] }],
+            include: [
+                {
+                    model: exams,
+                    as: "exam",
+                    attributes: ["id", "title", "type", "totalQuestions", "totalMarks", "passingMarks", "duration", "facultyId"],
+                },
+            ],
+            order: [["createdAt", "DESC"]],
+        });
+
+        // Retrieve student's bookmarks with associated question & chapter & subject
+        const userBookmarks = await bookmarks.findAll({
+            where: { userId: Number(userId) },
+            include: [
+                {
+                    model: questions,
+                    as: "question",
+                    attributes: ["id", "questionText", "difficulty", "chapterId"],
+                    include: [
+                        {
+                            model: chapters,
+                            as: "chapter",
+                            attributes: ["id", "name", "subjectId"],
+                            include: [
+                                {
+                                    model: subjects,
+                                    as: "subject",
+                                    attributes: ["id", "name", "code"],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
             order: [["createdAt", "DESC"]],
         });
 
         const totalExamsAttempted = completedAttempts.length;
-        const totalQuestionsAnswered = completedAttempts.reduce((sum, a) => sum + ((a.correctCount || 0) + (a.incorrectCount || 0)), 0);
+        const totalQuestionsAnswered = completedAttempts.reduce(
+            (sum, a) => sum + ((a.correctCount || 0) + (a.incorrectCount || 0)),
+            0
+        );
         const totalScore = completedAttempts.reduce((sum, a) => sum + Number(a.score || 0), 0);
         const averageScore = totalExamsAttempted > 0 ? Math.round((totalScore / totalExamsAttempted) * 100) / 100 : 0;
+        const highestScore = completedAttempts.length > 0 ? Math.max(...completedAttempts.map(a => Number(a.score) || 0)) : 0;
+        const passedBenchmarkExams = completedAttempts.filter(
+            a => Number(a.percentage) >= 50 || a.status?.toLowerCase() === "passed"
+        ).length;
 
-        const recentActivity = completedAttempts.slice(0, 5).map(att => ({
+        // Latest Exam Result
+        const latestExamResult = completedAttempts.length > 0 ? {
+            attemptId: completedAttempts[0].id,
+            examTitle: completedAttempts[0].exam?.title || "Mock Exam",
+            score: completedAttempts[0].score,
+            percentage: completedAttempts[0].percentage,
+            status: Number(completedAttempts[0].percentage) >= 50 ? "Passed" : "Failed",
+            date: completedAttempts[0].createdAt,
+        } : null;
+
+        // Recent Exams list
+        const recentExams = completedAttempts.slice(0, 5).map(att => ({
             attemptId: att.id,
+            examId: att.exam?.id || null,
             examTitle: att.exam?.title || "Mock Exam",
             examType: att.exam?.type || "mock",
             score: att.score,
             percentage: att.percentage,
+            status: Number(att.percentage) >= 50 ? "Passed" : "Failed",
             date: att.createdAt,
         }));
+
+        // Recent Bookmarks list
+        const recentBookmarks = userBookmarks.slice(0, 5).map(b => ({
+            id: b.id,
+            questionId: b.questionId,
+            questionText: b.question?.questionText || "Question",
+            difficulty: b.question?.difficulty || "medium",
+            chapterName: b.question?.chapter?.name || null,
+            subjectName: b.question?.chapter?.subject?.name || null,
+            date: b.createdAt,
+        }));
+
+        // Distinct subjects studied count
+        const studiedSubjectIds = new Set();
+        userBookmarks.forEach(b => {
+            if (b.question?.chapter?.subjectId) {
+                studiedSubjectIds.add(b.question.chapter.subjectId);
+            }
+        });
 
         const dashboardData = {
             user: {
@@ -262,13 +343,25 @@ async function getDashboardStats(req, res) {
                 faculty: user.faculty,
                 college: user.college,
                 role: user.role,
+                joinedDate: user.createdAt,
             },
-            statistics: {
+            examStatistics: {
                 totalExamsAttempted,
-                totalQuestionsAnswered,
                 averageScore,
+                highestScore,
+                passedBenchmarkExams,
+                latestExamResult,
             },
-            recentActivity,
+            learningStatistics: {
+                questionsAttempted: totalQuestionsAnswered,
+                questionsBookmarked: userBookmarks.length,
+                subjectsStudied: studiedSubjectIds.size,
+                passedBenchmarkExams,
+            },
+            recentActivity: {
+                recentExams,
+                recentBookmarks,
+            },
         };
 
         return res.status(200).json({
