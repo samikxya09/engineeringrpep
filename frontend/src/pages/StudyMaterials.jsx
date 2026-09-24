@@ -7,14 +7,17 @@ import {
   BookOpen,
   AlertCircle,
   RotateCcw,
-  CheckCircle2,
+  Plus,
+  Upload,
+  RefreshCw,
 } from "lucide-react";
 import { studyMaterialService, facultyService, subjectService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import UploadResourceModal from "../components/UploadResourceModal";
 
 const StudyMaterials = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const initialQ = searchParams.get("q") || "";
   const initialFacultyId = searchParams.get("facultyId") || "";
@@ -32,6 +35,7 @@ const StudyMaterials = () => {
   const [selectedFaculty, setSelectedFaculty] = useState(initialFacultyId);
   const [selectedSubject, setSelectedSubject] = useState(initialSubjectId);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // 1. Fetch filters
   useEffect(() => {
@@ -131,6 +135,8 @@ const StudyMaterials = () => {
     setSearchParams({});
   };
 
+  const isAdmin = user?.role === "admin";
+
   return (
     <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 space-y-10 text-[var(--text-primary)] text-left transition-colors duration-200">
       
@@ -140,6 +146,12 @@ const StudyMaterials = () => {
           <div className="inline-flex items-center gap-2 text-[12px] text-[var(--text-secondary)]">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-success)]" />
             <span>Resource Library</span>
+            {isAdmin && (
+              <>
+                <span>•</span>
+                <span className="text-[var(--accent-coral)] font-mono text-[11px]">Admin Mode</span>
+              </>
+            )}
           </div>
           <h1 className="font-editorial text-4xl sm:text-5xl text-[var(--text-primary)]">
             Study Materials & PDFs<span className="text-[var(--accent-coral)]">.</span>
@@ -149,8 +161,21 @@ const StudyMaterials = () => {
           </p>
         </div>
 
-        <div className="text-[13px] text-[var(--text-secondary)]">
-          <span>Available: <strong className="text-[var(--text-primary)]">{totalCount}</strong> Resources</span>
+        <div className="flex items-center gap-3">
+          <span className="text-[13px] text-[var(--text-secondary)] hidden sm:inline">
+            Available: <strong className="text-[var(--text-primary)]">{totalCount}</strong> Resources
+          </span>
+
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setIsUploadModalOpen(true)}
+              className="btn-primary !h-[40px] text-[13px] flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Upload Resource</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -210,9 +235,14 @@ const StudyMaterials = () => {
 
       {/* Error */}
       {error && (
-        <div className="p-4 rounded-[8px] bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[13px] flex items-center gap-2.5">
-          <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
-          <span>{error}</span>
+        <div className="p-4 rounded-[8px] bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[13px] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+            <span>{error}</span>
+          </div>
+          <button onClick={fetchMaterials} className="btn-secondary !py-1 text-[12px] flex items-center gap-1">
+            <RefreshCw className="w-3 h-3" /> Retry
+          </button>
         </div>
       )}
 
@@ -234,6 +264,14 @@ const StudyMaterials = () => {
           <p className="text-[13px] text-[var(--text-secondary)] max-w-sm mx-auto">
             {searchQuery ? `No study materials matching "${searchQuery}".` : "No PDF study materials have been uploaded yet."}
           </p>
+          {isAdmin && (
+            <button
+              onClick={() => setIsUploadModalOpen(true)}
+              className="btn-primary text-[13px] mt-2 inline-flex items-center gap-1.5"
+            >
+              <Upload className="w-4 h-4" /> Upload First Resource
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -303,8 +341,18 @@ const StudyMaterials = () => {
           ))}
         </div>
       )}
+
+      {/* Upload Resource Modal */}
+      <UploadResourceModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onSuccess={() => fetchMaterials()}
+        defaultFacultyId={selectedFaculty || ""}
+        defaultSubjectId={selectedSubject || ""}
+      />
     </div>
   );
 };
 
 export default StudyMaterials;
+

@@ -20,6 +20,7 @@ const videoResourceRoutes = require("./routes/videoResourceRoutes");
 const bookmarkRoutes = require("./routes/bookmarkRoutes");
 const searchRoutes = require("./routes/searchRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const importRoutes = require("./routes/importRoutes");
 
 // Middleware
 app.use(cors({
@@ -43,6 +44,7 @@ app.use("/api/study-materials", studyMaterialRoutes);
 app.use("/api/video-resources", videoResourceRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/import", importRoutes);
 app.use("/", authRoute);
 app.use("/user", userRoute);
 app.use("/admin", adminRoutes);
@@ -57,6 +59,7 @@ app.use("/study-materials", studyMaterialRoutes);
 app.use("/video-resources", videoResourceRoutes);
 app.use("/bookmarks", bookmarkRoutes);
 app.use("/search", searchRoutes);
+app.use("/import", importRoutes);
 
 // Root Health Check Route
 app.get("/", function (req, res) {

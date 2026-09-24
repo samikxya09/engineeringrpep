@@ -1,0 +1,4 @@
+chapterId,questionText,optionA,optionB,optionC,optionD,correctAnswer,explanation,difficulty
+1,"For a simply supported beam of length L carrying a central point load W, what is the maximum bending moment?",WL/2,WL/4,WL/8,WL/12,B,"The maximum bending moment occurs at mid-span and equals (W * L) / 4.",medium
+1,"At the point of contraflexure in a continuous beam, which quantity is zero?",Shear force,Bending moment,Deflection,Slope,B,"A point of contraflexure (inflection point) is a location along a flexural member where the bending moment changes sign and is zero.",easy
+2,"The pressure intensity at a depth h below the free surface of a static liquid of density ρ is given by:",ρ / (g * h),ρ * g * h,g / (ρ * h),0.5 * ρ * g * h^2,B,"Hydrostatic pressure intensity P = ρ * g * h (or γ * h) where γ is the unit weight of fluid.",easy

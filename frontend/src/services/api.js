@@ -75,12 +75,24 @@ export const facultyService = {
     const response = await api.get(`/api/faculties/${facultyId}/exams`);
     return response.data;
   },
+  create: async (facultyData) => {
+    const response = await api.post("/api/faculties", facultyData);
+    return response.data;
+  },
+  update: async (facultyId, facultyData) => {
+    const response = await api.put(`/api/faculties/${facultyId}`, facultyData);
+    return response.data;
+  },
+  delete: async (facultyId) => {
+    const response = await api.delete(`/api/faculties/${facultyId}`);
+    return response.data;
+  },
 };
 
 // Subject Service Endpoints
 export const subjectService = {
-  getAll: async () => {
-    const response = await api.get("/api/subjects");
+  getAll: async (params = {}) => {
+    const response = await api.get("/api/subjects", { params });
     return response.data;
   },
   getById: async (subjectId) => {
@@ -99,12 +111,24 @@ export const subjectService = {
     const response = await api.get(`/api/subjects/${subjectId}/video-resources`);
     return response.data;
   },
+  create: async (subjectData) => {
+    const response = await api.post("/api/subjects", subjectData);
+    return response.data;
+  },
+  update: async (subjectId, subjectData) => {
+    const response = await api.put(`/api/subjects/${subjectId}`, subjectData);
+    return response.data;
+  },
+  delete: async (subjectId) => {
+    const response = await api.delete(`/api/subjects/${subjectId}`);
+    return response.data;
+  },
 };
 
 // Chapter Service Endpoints
 export const chapterService = {
-  getAll: async () => {
-    const response = await api.get("/api/chapters");
+  getAll: async (params = {}) => {
+    const response = await api.get("/api/chapters", { params });
     return response.data;
   },
   getById: async (chapterId) => {
@@ -117,6 +141,18 @@ export const chapterService = {
   },
   getVideoResources: async (chapterId) => {
     const response = await api.get(`/api/chapters/${chapterId}/video-resources`);
+    return response.data;
+  },
+  create: async (chapterData) => {
+    const response = await api.post("/api/chapters", chapterData);
+    return response.data;
+  },
+  update: async (chapterId, chapterData) => {
+    const response = await api.put(`/api/chapters/${chapterId}`, chapterData);
+    return response.data;
+  },
+  delete: async (chapterId) => {
+    const response = await api.delete(`/api/chapters/${chapterId}`);
     return response.data;
   },
 };
@@ -137,6 +173,18 @@ export const questionService = {
   },
   getById: async (questionId) => {
     const response = await api.get(`/api/questions/${questionId}`);
+    return response.data;
+  },
+  create: async (questionData) => {
+    const response = await api.post("/api/questions", questionData);
+    return response.data;
+  },
+  update: async (questionId, questionData) => {
+    const response = await api.put(`/api/questions/${questionId}`, questionData);
+    return response.data;
+  },
+  delete: async (questionId) => {
+    const response = await api.delete(`/api/questions/${questionId}`);
     return response.data;
   },
 };
@@ -216,6 +264,28 @@ export const studyMaterialService = {
       responseType: "blob",
     });
     return response;
+  },
+  upload: async (formData) => {
+    const response = await api.post("/api/study-materials", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+  create: async (formData) => {
+    const response = await api.post("/api/study-materials", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+  update: async (materialId, formData) => {
+    const response = await api.put(`/api/study-materials/${materialId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+  delete: async (materialId) => {
+    const response = await api.delete(`/api/study-materials/${materialId}`);
+    return response.data;
   },
 };
 

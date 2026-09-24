@@ -1,0 +1,7 @@
+subjectId,chapterNumber,name,description
+1,1,Shear Force and Bending Moment Diagrams,Static equilibrium and calculation of SFD and BMD for cantilever and simply supported beams
+1,2,Deflection of Beams,Moment area method conjugate beam method and energy methods for elastic slope and deflection
+1,3,Moment Distribution Method,Iterative analysis of continuous beams and non-sway frames
+2,1,Fluid Properties and Hydrostatic Pressure,Density viscosity surface tension Pascal law and pressure on submerged planes
+2,2,Bernoulli Equation and Flow Measurement,Energy equation continuity equation Venturimeter Pitot tube and orificemeter
+3,1,Physical Index Properties of Soil,Void ratio porosity moisture content Atterberg limits and soil classification

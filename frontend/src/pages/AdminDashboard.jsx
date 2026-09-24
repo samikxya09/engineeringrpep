@@ -13,18 +13,32 @@ import {
   AlertCircle,
   RefreshCw,
   FolderTree,
+  Plus,
+  Upload,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { adminService } from "../services/api";
 import AdminStatCard from "../components/AdminStatCard";
 import ManagementCard from "../components/ManagementCard";
 import AnalyticsCard from "../components/AnalyticsCard";
+import AddFacultyModal from "../components/AddFacultyModal";
+import AddSubjectModal from "../components/AddSubjectModal";
+import AddChapterModal from "../components/AddChapterModal";
+import AddQuestionModal from "../components/AddQuestionModal";
+import UploadResourceModal from "../components/UploadResourceModal";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Modal open states
+  const [isFacultyModalOpen, setIsFacultyModalOpen] = useState(false);
+  const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
+  const [isChapterModalOpen, setIsChapterModalOpen] = useState(false);
+  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const fetchDashboardData = async () => {
     try {
@@ -46,6 +60,10 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  const handleModalSuccess = () => {
+    fetchDashboardData();
+  };
 
   const displayName = user?.fullName || user?.Fullname || user?.name || user?.email || "Admin";
 
@@ -102,6 +120,66 @@ const AdminDashboard = () => {
           </button>
         </div>
       )}
+
+      {/* Quick Action Creation Bar */}
+      <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Plus className="w-4 h-4 text-[var(--accent-coral)]" />
+            <span className="text-[13px] font-medium text-[var(--text-primary)]">
+              Quick Content Creation Actions
+            </span>
+          </div>
+          <span className="text-[11px] text-[var(--text-secondary)]">Instant CRUD creation modals</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 pt-1">
+          <button
+            type="button"
+            onClick={() => setIsFacultyModalOpen(true)}
+            className="btn-secondary !h-[34px] text-[12px] flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5 text-[var(--accent-coral)]" />
+            <span>Add Faculty</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsSubjectModalOpen(true)}
+            className="btn-secondary !h-[34px] text-[12px] flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5 text-[var(--accent-coral)]" />
+            <span>Add Subject</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsChapterModalOpen(true)}
+            className="btn-secondary !h-[34px] text-[12px] flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5 text-[var(--accent-coral)]" />
+            <span>Add Chapter</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsQuestionModalOpen(true)}
+            className="btn-primary !h-[34px] text-[12px] flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Question</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsUploadModalOpen(true)}
+            className="btn-secondary !h-[34px] text-[12px] flex items-center gap-1.5"
+          >
+            <Upload className="w-3.5 h-3.5 text-[var(--accent-coral)]" />
+            <span>Upload Resource</span>
+          </button>
+        </div>
+      </div>
 
       {/* Loading Skeleton */}
       {loading && !data && (
@@ -249,6 +327,8 @@ const AdminDashboard = () => {
                 link="/faculties"
                 icon={Layers}
                 actionText="View Faculties"
+                onAddClick={() => setIsFacultyModalOpen(true)}
+                addText="Add Faculty"
               />
 
               <ManagementCard
@@ -259,6 +339,8 @@ const AdminDashboard = () => {
                 link="/subjects"
                 icon={BookOpen}
                 actionText="Manage Subjects"
+                onAddClick={() => setIsSubjectModalOpen(true)}
+                addText="Add Subject"
               />
 
               <ManagementCard
@@ -269,6 +351,8 @@ const AdminDashboard = () => {
                 link="/chapters"
                 icon={FolderTree}
                 actionText="Manage Chapters"
+                onAddClick={() => setIsChapterModalOpen(true)}
+                addText="Add Chapter"
               />
 
               <ManagementCard
@@ -280,6 +364,8 @@ const AdminDashboard = () => {
                 icon={HelpCircle}
                 actionText="Explore Question Bank"
                 highlight={true}
+                onAddClick={() => setIsQuestionModalOpen(true)}
+                addText="Add Question"
               />
 
               <ManagementCard
@@ -300,6 +386,8 @@ const AdminDashboard = () => {
                 link="/study-materials"
                 icon={FileText}
                 actionText="Manage Study Notes"
+                onAddClick={() => setIsUploadModalOpen(true)}
+                addText="Upload PDF"
               />
 
               <ManagementCard
@@ -321,8 +409,40 @@ const AdminDashboard = () => {
         </>
       )}
 
+      {/* Creation Modals */}
+      <AddFacultyModal
+        isOpen={isFacultyModalOpen}
+        onClose={() => setIsFacultyModalOpen(false)}
+        onSuccess={handleModalSuccess}
+      />
+
+      <AddSubjectModal
+        isOpen={isSubjectModalOpen}
+        onClose={() => setIsSubjectModalOpen(false)}
+        onSuccess={handleModalSuccess}
+      />
+
+      <AddChapterModal
+        isOpen={isChapterModalOpen}
+        onClose={() => setIsChapterModalOpen(false)}
+        onSuccess={handleModalSuccess}
+      />
+
+      <AddQuestionModal
+        isOpen={isQuestionModalOpen}
+        onClose={() => setIsQuestionModalOpen(false)}
+        onSuccess={handleModalSuccess}
+      />
+
+      <UploadResourceModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onSuccess={handleModalSuccess}
+      />
+
     </div>
   );
 };
 
 export default AdminDashboard;
+

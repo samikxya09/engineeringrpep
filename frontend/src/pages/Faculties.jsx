@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, Search, AlertCircle, RefreshCw } from "lucide-react";
+import { ArrowRight, BookOpen, Search, AlertCircle, RefreshCw, Plus } from "lucide-react";
 import { facultyService } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import AddFacultyModal from "../components/AddFacultyModal";
 
 const Faculties = () => {
+  const { user } = useAuth();
   const [faculties, setFaculties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const fetchFaculties = async () => {
     try {
@@ -37,6 +41,8 @@ const Faculties = () => {
     );
   });
 
+  const isAdmin = user?.role === "admin";
+
   return (
     <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 space-y-10 text-[var(--text-primary)] text-left transition-colors duration-200">
       
@@ -46,6 +52,12 @@ const Faculties = () => {
           <div className="inline-flex items-center gap-2 text-[12px] text-[var(--text-secondary)]">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-success)]" />
             <span>Curriculum Explorer</span>
+            {isAdmin && (
+              <>
+                <span>•</span>
+                <span className="text-[var(--accent-coral)] font-mono text-[11px]">Admin Mode</span>
+              </>
+            )}
           </div>
           <h1 className="font-editorial text-4xl sm:text-5xl text-[var(--text-primary)]">
             Engineering Disciplines<span className="text-[var(--accent-coral)]">.</span>
@@ -55,16 +67,29 @@ const Faculties = () => {
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="w-full md:w-72 relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
-          <input
-            type="text"
-            placeholder="Search disciplines..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-minimal pl-9 text-[13px]"
-          />
+        {/* Search Bar & Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="w-full sm:w-64 relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
+            <input
+              type="text"
+              placeholder="Search disciplines..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="input-minimal pl-9 text-[13px]"
+            />
+          </div>
+
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
+              className="btn-primary !h-[44px] text-[13px] flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Faculty</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -100,6 +125,14 @@ const Faculties = () => {
           <p className="text-[13px] text-[var(--text-secondary)] max-w-sm mx-auto">
             {searchTerm ? `No disciplines matching "${searchTerm}". Try a different keyword.` : "No engineering disciplines have been added yet."}
           </p>
+          {isAdmin && (
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="btn-primary text-[13px] mt-2 inline-flex items-center gap-1.5"
+            >
+              <Plus className="w-4 h-4" /> Add First Faculty
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -138,8 +171,16 @@ const Faculties = () => {
           ))}
         </div>
       )}
+
+      {/* Add Faculty Modal */}
+      <AddFacultyModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => fetchFaculties()}
+      />
     </div>
   );
 };
 
 export default Faculties;
+

@@ -82,7 +82,136 @@ async function getSubjectsByFaculty(req, res) {
     }
 }
 
+/**
+ * Create Faculty (Admin Only)
+ * POST /api/faculties
+ */
+async function createFaculty(req, res) {
+    try {
+        const { name, code, description } = req.body;
+
+        if (!name || !name.trim()) {
+            return res.status(400).json({
+                message: "Faculty name is required",
+            });
+        }
+
+        const existing = await faculties.findOne({ where: { name: name.trim() } });
+        if (existing) {
+            return res.status(409).json({
+                message: `Faculty '${name.trim()}' already exists`,
+            });
+        }
+
+        const newFaculty = await faculties.create({
+            name: name.trim(),
+            code: code ? code.trim() : null,
+            description: description ? description.trim() : null,
+            isActive: true,
+        });
+
+        return res.status(201).json({
+            message: "Faculty created successfully",
+            faculty: newFaculty,
+        });
+    } catch (error) {
+        console.error("Error creating faculty:", error);
+        return res.status(500).json({
+            message: "Internal server error while creating faculty",
+            error: error.message,
+        });
+    }
+}
+
+/**
+ * Update Faculty (Admin Only)
+ * PUT /api/faculties/:id
+ */
+async function updateFaculty(req, res) {
+    try {
+        const { id } = req.params;
+        const { name, code, description, isActive } = req.body;
+
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                message: "Invalid faculty ID",
+            });
+        }
+
+        const faculty = await faculties.findByPk(Number(id));
+        if (!faculty) {
+            return res.status(404).json({
+                message: `Faculty with ID ${id} not found`,
+            });
+        }
+
+        if (name !== undefined && name.trim()) {
+            faculty.name = name.trim();
+        }
+        if (code !== undefined) {
+            faculty.code = code ? code.trim() : null;
+        }
+        if (description !== undefined) {
+            faculty.description = description ? description.trim() : null;
+        }
+        if (isActive !== undefined) {
+            faculty.isActive = Boolean(isActive);
+        }
+
+        await faculty.save();
+
+        return res.status(200).json({
+            message: "Faculty updated successfully",
+            faculty,
+        });
+    } catch (error) {
+        console.error("Error updating faculty:", error);
+        return res.status(500).json({
+            message: "Internal server error while updating faculty",
+            error: error.message,
+        });
+    }
+}
+
+/**
+ * Delete Faculty (Admin Only)
+ * DELETE /api/faculties/:id
+ */
+async function deleteFaculty(req, res) {
+    try {
+        const { id } = req.params;
+
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                message: "Invalid faculty ID",
+            });
+        }
+
+        const faculty = await faculties.findByPk(Number(id));
+        if (!faculty) {
+            return res.status(404).json({
+                message: `Faculty with ID ${id} not found`,
+            });
+        }
+
+        await faculty.destroy();
+
+        return res.status(200).json({
+            message: `Faculty '${faculty.name}' deleted successfully`,
+        });
+    } catch (error) {
+        console.error("Error deleting faculty:", error);
+        return res.status(500).json({
+            message: "Internal server error while deleting faculty",
+            error: error.message,
+        });
+    }
+}
+
 module.exports = {
     getAllFaculties,
     getSubjectsByFaculty,
+    createFaculty,
+    updateFaculty,
+    deleteFaculty,
 };

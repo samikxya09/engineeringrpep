@@ -13,13 +13,15 @@ import {
   RotateCcw,
   AlertCircle,
   BookOpen,
+  Plus,
 } from "lucide-react";
 import { questionService, facultyService, subjectService, chapterService, bookmarkService } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import AddQuestionModal from "../components/AddQuestionModal";
 
 const QuestionsPractice = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   // URL Query Params State
   const initialQ = searchParams.get("q") || "";
@@ -36,6 +38,7 @@ const QuestionsPractice = () => {
   const [page, setPage] = useState(initialPage);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Filter Dropdown Options
   const [faculties, setFaculties] = useState([]);
@@ -250,6 +253,12 @@ const QuestionsPractice = () => {
           <div className="inline-flex items-center gap-2 text-[12px] text-[var(--text-secondary)]">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-success)]" />
             <span>Practice Hub</span>
+            {user?.role === "admin" && (
+              <>
+                <span>•</span>
+                <span className="text-[var(--accent-coral)] font-mono text-[11px]">Admin Mode</span>
+              </>
+            )}
           </div>
           <h1 className="font-editorial text-4xl sm:text-5xl text-[var(--text-primary)]">
             Explore Questions<span className="text-[var(--accent-coral)]">.</span>
@@ -259,8 +268,21 @@ const QuestionsPractice = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-[13px] text-[var(--text-secondary)]">
-          <span>Total: <strong className="text-[var(--text-primary)]">{totalCount}</strong> MCQs</span>
+        <div className="flex items-center gap-3">
+          <span className="text-[13px] text-[var(--text-secondary)] hidden sm:inline">
+            Total: <strong className="text-[var(--text-primary)]">{totalCount}</strong> MCQs
+          </span>
+
+          {user?.role === "admin" && (
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
+              className="btn-primary !h-[40px] text-[13px] flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Question</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -564,8 +586,18 @@ const QuestionsPractice = () => {
         </div>
       )}
 
+      {/* Add Question Modal */}
+      <AddQuestionModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => fetchQuestions()}
+        defaultFacultyId={selectedFaculty || ""}
+        defaultSubjectId={selectedSubject || ""}
+        defaultChapterId={selectedChapter || ""}
+      />
     </div>
   );
 };
 
 export default QuestionsPractice;
+
